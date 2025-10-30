@@ -1,5 +1,5 @@
 // Free Polygon.io integration (get key at polygon.io)
-const API_KEY = 'YOUR_API_KEY'; // Replace with your free key
+const API_KEY = 'leWZPsR3ClLKsU4Xpo189W2MMKEWAHlo'; // Replace with your free key
 let nodes = [];
 
 // Fetch real price data and simulate nodes based on user-entered ticker
