@@ -1,5 +1,5 @@
 /* ==================== CONFIG ==================== */
-const API_KEY = 'kyjVZVOk2kENfEFcATHft52jJo4UHUAL';   // <-- replace with your free key
+const API_KEY = kyjVZVOk2kENfEFcATHft52jJo4UHUAL;   // <-- replace with your free key
 let nodes = [];
 
 /* ==================== DOM ==================== */
