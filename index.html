@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Insight Simulator - Dealer Positioning Heatmap</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>🔥 Market Insight Simulator</h1>
+        <p>Real-time insights into market forces – Free & Open-Source</p>
+    </header>
+
+    <main>
+        <section id="intro">
+            <h2>💡 What is Market Insight Simulator?</h2>
+            <p>A visual tool that simplifies market dynamics, showing how dealers and institutions drive price action. Get actionable insights to trade smarter.</p>
+        </section>
+
+        <section id="why">
+            <h2>🚀 Why It Matters</h2>
+            <ul>
+                <li>✅ Predict price direction accurately</li>
+                <li>✅ Detect chop, range, or trends</li>
+                <li>✅ Align with dealer positioning</li>
+                <li>✅ Manage stocks, options, futures effectively</li>
+            </ul>
+        </section>
+
+        <section id="participants">
+            <h2>🏦 Market Participants</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>1️⃣ Market Dealers</h3>
+                    <p>Liquidity providers who hedge risks, influencing prices like casino operators.</p>
+                </div>
+                <div class="card">
+                    <h3>2️⃣ Institutions & Funds</h3>
+                    <p>Large bets from funds that anchor key levels.</p>
+                </div>
+                <div class="card">
+                    <h3>3️⃣ Customers</h3>
+                    <p>Retail flows creating hedge stress.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-works">
+            <h2>⚙️ How It Works</h2>
+            <p>Monitors simulated real-time data to map risk zones with color gradients:</p>
+            <ul>
+                <li>🟡 <strong>Bright Yellow Nodes</strong>: Absorb movement, reduce volatility (magnetic pillow). Often reversals.</li>
+                <li>🟣 <strong>Dark Purple Nodes</strong>: Amplify movement, increase volatility (gasoline on fire). Potential reversals.</li>
+            </ul>
+            <p>Node numbers show strength (higher = stronger pull/explosion).</p>
+            <canvas id="heatmap" width="800" height="400"></canvas>
+            <p id="data-status">Loading demo data...</p>
+        </section>
+
+        <section id="usage">
+            <h2>📈 How to Use</h2>
+            <div class="scenarios">
+                <div class="scenario">
+                    <h3>🌊 Choppy/Range-Bound</h3>
+                    <p>Trapped between yellow zones? Low vol – sell premium or fade edges.</p>
+                </div>
+                <div class="scenario">
+                    <h3>⚡ High Volatility Breakouts</h3>
+                    <p>Approaching purple? Fast moves – ride or hedge aggressively.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion">
+            <h2>🧠 Conclusion</h2>
+            <p>Your market GPS – trade with clarity, no noise. Use colors, pressure points, gain edge.</p>
+            <p><em>Open-source | Fork on GitHub | Powered by free APIs</em></p>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
