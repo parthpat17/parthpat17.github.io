@@ -1,107 +1,150 @@
-// Free Polygon.io integration (get key at polygon.io)
-const API_KEY = 'leWZPsR3ClLKsU4Xpo189W2MMKEWAHlo'; // Replace with your free key
+/* ==================== CONFIG ==================== */
+const API_KEY = 'YOUR_POLYGON_API_KEY';   // <-- replace with your free key
 let nodes = [];
 
-// Fetch real price data and simulate nodes based on user-entered ticker
-async function loadData() {
-    const tickerInput = document.getElementById('ticker-input').value.toUpperCase();
-    const SYMBOL = tickerInput || 'AAPL'; // Default to AAPL if empty
-    const statusElement = document.getElementById('data-status');
+/* ==================== DOM ==================== */
+const tickerInput = document.getElementById('ticker-input');
+const loadBtn     = document.getElementById('load-btn');
+const statusEl    = document.getElementById('data-status');
 
-    if (!tickerInput) {
-        statusElement.textContent = 'No ticker entered, using AAPL as default...';
-    }
+/* ==================== HELPERS ==================== */
+function setStatus(msg, isError = false) {
+    statusEl.textContent = msg;
+    statusEl.style.color = isError ? '#ff6b6b' : '#FFD700';
+}
+
+/* ==================== FETCH & SIMULATE ==================== */
+async function loadData() {
+    const raw = tickerInput.value.trim().toUpperCase();
+    const symbol = raw || 'AAPL';
+    setStatus(`Fetching ${symbol}…`);
 
     try {
-        statusElement.textContent = `Loading data for ${SYMBOL}...`;
-        const response = await fetch(`https://api.polygon.io/v2/aggs/ticker/${SYMBOL}/range/1/day/2025-10-01/2025-10-30?apiKey=${API_KEY}`);
-        const data = await response.json();
-        if (data.results) {
-            const prices = data.results.map(r => r.c); // Closing prices
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-            const range = maxPrice - minPrice;
+        const resp = await fetch(
+            `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/2025-10-01/2025-10-30?adjusted=true&apiKey=${API_KEY}`
+        );
+        const data = await resp.json();
 
-            // Simulate 10 nodes based on price levels
-            nodes = [];
-            for (let i = 0; i < 10; i++) {
-                const price = minPrice + (range * i / 10);
-                const strength = (Math.random() - 0.5) * 20; // -10 to +10
-                const type = Math.random() > 0.5 ? 'yellow' : 'purple';
-                nodes.push({ price, strength, type });
-            }
+        if (!data.results || data.results.length === 0) throw new Error('No data');
 
-            statusElement.textContent = `Loaded data for ${SYMBOL} (Price range: $${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)})`;
-            drawHeatmap();
-        } else {
-            throw new Error('No data');
+        const closes = data.results.map(r => r.c);
+        const minP = Math.min(...closes);
+        const maxP = Math.max(...closes);
+        const range = maxP - minP || 1;
+
+        // ---- generate 12 readable nodes ----
+        nodes = [];
+        for (let i = 0; i < 12; i++) {
+            const price = minP + range * (i / 11);
+            const strength = (Math.random() - 0.5) * 22; // -11 … +11
+            const type = Math.random() > 0.5 ? 'yellow' : 'purple';
+            nodes.push({ price: +price.toFixed(2), strength: +strength.toFixed(1), type });
         }
-    } catch (error) {
-        // Fallback simulation
+
+        setStatus(`${symbol} – $${minP.toFixed(2)} → $${maxP.toFixed(2)}`);
+        drawHeatmap();
+    } catch (e) {
+        // ---- fallback demo ----
         nodes = [
-            { price: 220, strength: 8, type: 'yellow' },
-            { price: 225, strength: -12, type: 'purple' },
-            { price: 230, strength: 5, type: 'yellow' },
+            { price: 220, strength:  9.2, type: 'yellow' },
+            { price: 225, strength: -12.4, type: 'purple' },
+            { price: 230, strength:  6.1, type: 'yellow' },
+            { price: 235, strength: -8.7, type: 'purple' }
         ];
-        statusElement.textContent = `Error loading ${SYMBOL} data. Using demo data (API key needed for real data)`;
+        setStatus(`Demo mode (API error). Using static nodes.`, true);
         drawHeatmap();
     }
 }
 
-// Draw gradient nodes on canvas (y-axis: price levels)
+/* ==================== DRAW HEATMAP ==================== */
 function drawHeatmap() {
     const canvas = document.getElementById('heatmap');
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    const w = canvas.width;
+    const h = canvas.height;
 
-    // Clear canvas
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, width, height);
+    // ---- clear ----
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, w, h);
 
-    // Draw price axis
-    ctx.strokeStyle = '#FFD700';
+    // ---- axes ----
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(50, 0);
-    ctx.lineTo(50, height);
-    ctx.lineTo(width, height);
+    ctx.moveTo(80, 20);
+    ctx.lineTo(80, h - 60);
+    ctx.lineTo(w - 40, h - 60);
     ctx.stroke();
 
-    // Draw nodes as gradient circles
-    nodes.sort((a, b) => a.price - b.price);
-    nodes.forEach((node, i) => {
-        const x = 60 + (i * 70); // Horizontal spacing
-        const y = height - ((node.price - Math.min(...nodes.map(n => n.price))) / (Math.max(...nodes.map(n => n.price)) - Math.min(...nodes.map(n => n.price))) * height);
-        
-        // Gradient color
-        let color;
+    // axis labels
+    ctx.fillStyle = '#aaa';
+    ctx.font = '14px Arial';
+    ctx.fillText('Price ($)', 10, h/2);
+    ctx.save();
+    ctx.translate(w/2, h - 20);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText('Strength', 0, 0);
+    ctx.restore();
+
+    // ---- price range ----
+    const priceMin = Math.min(...nodes.map(n=>n.price));
+    const priceMax = Math.max(...nodes.map(n=>n.price));
+    const priceRange = priceMax - priceMin || 1;
+
+    // ---- draw each node ----
+    nodes.forEach(node => {
+        // Y = price
+        const y = h - 60 - ((node.price - priceMin) / priceRange) * (h - 100);
+        // X = strength (centered, scaled)
+        const strengthScale = (w - 120) / 44; // ±22 max
+        const x = 80 + (node.strength + 22) * strengthScale;
+
+        // colour gradient
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, 35);
         if (node.type === 'yellow') {
-            const grad = ctx.createRadialGradient(x, y, 0, x, y, 30);
             grad.addColorStop(0, '#FFFF00');
             grad.addColorStop(1, '#FFD700');
-            color = grad;
         } else {
-            const grad = ctx.createRadialGradient(x, y, 0, x, y, 30);
-            grad.addColorStop(0, '#8A2BE2');
+            grad.addColorStop(0, '#DDA0DD');
             grad.addColorStop(1, '#4B0082');
-            color = grad;
         }
-        
-        ctx.fillStyle = color;
+        ctx.fillStyle = grad;
+
+        const radius = 20 + Math.abs(node.strength) * 1.2; // bigger = stronger
         ctx.beginPath();
-        ctx.arc(x, y, Math.abs(node.strength) + 10, 0, 2 * Math.PI); // Size by strength
+        ctx.arc(x, y, radius, 0, Math.PI*2);
         ctx.fill();
 
-        // Label
-        ctx.fillStyle = '#FFF';
-        ctx.font = '12px Arial';
-        ctx.fillText(`${node.strength.toFixed(1)}`, x - 10, y - 10);
-        ctx.fillText(node.price.toFixed(2), x - 20, y + 40);
+        // strength label (big)
+        ctx.fillStyle = node.strength >= 0 ? '#fff' : '#ff5555';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(node.strength, x, y + 6);
+
+        // price label (below)
+        ctx.fillStyle = '#ddd';
+        ctx.font = '14px Arial';
+        ctx.fillText(`$${node.price}`, x, y + radius + 18);
     });
+
+    // ---- current price line (optional) ----
+    const latestPrice = nodes[nodes.length-1].price;
+    const ly = h - 60 - ((latestPrice - priceMin) / priceRange) * * (h - 100);
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5,5]);
+    ctx.beginPath();
+    ctx.moveTo(80, ly);
+    ctx.lineTo(w-40, ly);
+    ctx.stroke();
+    ctx.setLineDash([]);
 }
 
-// Init on load (optional: load default ticker)
+/* ==================== EVENTS ==================== */
+loadBtn.addEventListener('click', loadData);
+tickerInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadData(); });
+
 window.addEventListener('load', () => {
-    document.getElementById('ticker-input').value = 'AAPL'; // Default ticker
+    tickerInput.value = 'AAPL';
     loadData();
 });
