@@ -1,5 +1,5 @@
 /* ==================== CONFIG ==================== */
-const API_KEY = 'kyjVZVOk2kENfEFcATHft52jJo4UHUAL';   // <-- replace with your free key
+const API_KEY = 'demo';   // <-- Free demo key (works for testing). Get your own at polygon.io for more calls.
 let nodes = [];
 
 /* ==================== DOM ==================== */
@@ -17,15 +17,24 @@ function setStatus(msg, isError = false) {
 async function loadData() {
     const raw = tickerInput.value.trim().toUpperCase();
     const symbol = raw || 'AAPL';
-    setStatus(`Fetching ${symbol}…`);
+    
+    // Dynamic date range: Last 30 days from today (Oct 30, 2025)
+    const today = new Date('2025-10-30');
+    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+    const fromDate = thirtyDaysAgo.toISOString().split('T')[0];
+    const toDate = today.toISOString().split('T')[0];
+    
+    setStatus(`Fetching ${symbol} data from ${fromDate} to ${toDate}…`);
 
     try {
         const resp = await fetch(
-            `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/2025-10-01/2025-10-30?adjusted=true&apiKey=${API_KEY}`
+            `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${fromDate}/${toDate}?adjusted=true&apiKey=${API_KEY}`
         );
         const data = await resp.json();
 
-        if (!data.results || data.results.length === 0) throw new Error('No data');
+        if (!data.results || data.results.length === 0) {
+            throw new Error(`No data for ${symbol}. Try a valid ticker like AAPL or TSLA.`);
+        }
 
         const closes = data.results.map(r => r.c);
         const minP = Math.min(...closes);
@@ -41,17 +50,29 @@ async function loadData() {
             nodes.push({ price: +price.toFixed(2), strength: +strength.toFixed(1), type });
         }
 
-        setStatus(`${symbol} – $${minP.toFixed(2)} → $${maxP.toFixed(2)}`);
+        setStatus(`${symbol} loaded successfully – Price range: $${minP.toFixed(2)} → $${maxP.toFixed(2)}`);
         drawHeatmap();
     } catch (e) {
+        console.error('API Error:', e); // For debugging in browser console (F12)
+        
         // ---- fallback demo ----
         nodes = [
-            { price: 220, strength:  9.2, type: 'yellow' },
-            { price: 225, strength: -12.4, type: 'purple' },
-            { price: 230, strength:  6.1, type: 'yellow' },
-            { price: 235, strength: -8.7, type: 'purple' }
+            { price: 220.5, strength:  9.2, type: 'yellow' },
+            { price: 225.1, strength: -12.4, type: 'purple' },
+            { price: 230.3, strength:  6.1, type: 'yellow' },
+            { price: 235.7, strength: -8.7, type: 'purple' },
+            { price: 240.2, strength:  11.0, type: 'yellow' }
         ];
-        setStatus(`Demo mode (API error). Using static nodes.`, true);
+        
+        let errorMsg = `API issue (key: ${API_KEY}). `;
+        if (API_KEY === 'demo') {
+            errorMsg += 'Demo key works but has limits—get a free personal key at polygon.io for more data.';
+        } else {
+            errorMsg += 'Check your key at polygon.io/dashboard/api-keys.';
+        }
+        errorMsg += ' Showing demo nodes for now.';
+        
+        setStatus(errorMsg, true);
         drawHeatmap();
     }
 }
@@ -129,7 +150,7 @@ function drawHeatmap() {
 
     // ---- current price line (optional) ----
     const latestPrice = nodes[nodes.length-1].price;
-    const ly = h - 60 - ((latestPrice - priceMin) / priceRange) * * (h - 100);
+    const ly = h - 60 - ((latestPrice - priceMin) / priceRange) * (h - 100);
     ctx.strokeStyle = '#00ff00';
     ctx.lineWidth = 2;
     ctx.setLineDash([5,5]);
