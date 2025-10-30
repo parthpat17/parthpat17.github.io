@@ -61,6 +61,42 @@ ul li::before {
     border-left: 4px solid #FFD700;
 }
 
+.input-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#ticker-input {
+    padding: 10px;
+    background: #222;
+    border: 1px solid #FFD700;
+    color: #FFF;
+    border-radius: 5px;
+    width: 200px;
+    font-size: 16px;
+}
+
+#ticker-input::placeholder {
+    color: #888;
+}
+
+button {
+    padding: 10px 20px;
+    background: #FFD700;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #DAA520;
+}
+
 #heatmap {
     border: 1px solid #FFD700;
     display: block;
@@ -76,4 +112,5 @@ ul li::before {
 @media (max-width: 768px) {
     main { padding: 10px; }
     #heatmap { width: 100%; height: auto; }
+    #ticker-input { width: 150px; }
 }
