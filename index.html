@@ -54,8 +54,12 @@
                 <li>🟣 <strong>Dark Purple Nodes</strong>: Amplify movement, increase volatility (gasoline on fire). Potential reversals.</li>
             </ul>
             <p>Node numbers show strength (higher = stronger pull/explosion).</p>
+            <div class="input-container">
+                <input type="text" id="ticker-input" placeholder="Enter stock ticker (e.g., AAPL)" />
+                <button onclick="loadData()">Load Data</button>
+            </div>
             <canvas id="heatmap" width="800" height="400"></canvas>
-            <p id="data-status">Loading demo data...</p>
+            <p id="data-status">Enter a ticker to load data...</p>
         </section>
 
         <section id="usage">
